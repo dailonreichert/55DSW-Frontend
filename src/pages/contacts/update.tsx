@@ -9,6 +9,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import api from "../../services/api";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import Router from "next/router";
 
 type CreateContactFormData = {
@@ -18,12 +19,14 @@ type CreateContactFormData = {
 }
 
 const createUserFormSchema = yup.object().shape({
-  name: yup.string().required('Nome obrigatório'),
-  fone: yup.string().required('Fone obrigatório'),
-  email: yup.string().required('E-mail obrigatório').email('E-mail inválido')
+  name: yup.string(),
+  fone: yup.string(),
+  email: yup.string()
 });
 
-export default function CreateContact() {
+export default function UpdateContact() {
+  const [contact, setContact] = useState([]);
+
   const router = useRouter();
 
   const {register, handleSubmit, formState} = useForm({
@@ -32,9 +35,23 @@ export default function CreateContact() {
 
   const {errors} = formState;
 
-  const handleCreateContact: SubmitHandler<CreateContactFormData> = async (values) => {
+  useEffect(() => {
+    api.get('/contato', {
+        params: {
+            id_contato : localStorage.getItem("id_contato"),
+            id_usuario : localStorage.getItem("id_usuario")
+        }
+    })
+    .then(response => setContact(response.data));
+  }, []);
+
+  const handleUpdateContact: SubmitHandler<CreateContactFormData> = async (values) => {
       try{
-        api.post('/contato', {
+        const id = localStorage.getItem("id_contato");
+
+        console.log(values);
+
+        api.put(`/contato/${id}`, {
           name : values.name, 
           fone : values.fone,
           email: values.email,
@@ -42,10 +59,10 @@ export default function CreateContact() {
         });
       }
       catch(err){
-        alert('erro ao tentar incluir usuário!');
+        alert('erro ao tentar atualizar o Contato!');
       }
 
-      alert('Contato criado com sucesso!');
+      alert('Contato atualizado com sucesso!');
 
       router.push('/dashboard');
   }
@@ -61,7 +78,7 @@ export default function CreateContact() {
             borderRadius={8} 
             bg="gray.800" 
             p={["6", "8"]}
-            onSubmit={handleSubmit(handleCreateContact)}
+            onSubmit={handleSubmit(handleUpdateContact)}
         >
           <Heading size="lg" fontWeight="normal">Criar Contato</Heading>
 
@@ -69,27 +86,34 @@ export default function CreateContact() {
 
           <VStack spacing="8"> 
             <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} w="100%">
-              <Input 
-                name="name" 
-                label="Nome" 
-                error={errors.name}
-                {...register('name')} 
-              />
+              {contact.map(cont => (
+                <>
+                  <Input 
+                  name="name" 
+                  label="Nome" 
+                  error={errors.name}
+                  {...register('name')} 
+                  defaultValue={cont.name}
+                />
 
-              <Input 
-                name="fone" 
-                label="Telefone" 
-                error={errors.fone}
-                {...register('fone')}
-              />
+                <Input 
+                  name="fone" 
+                  label="Telefone" 
+                  error={errors.fone}
+                  {...register('fone')}
+                  defaultValue={cont.fone}
+                />
 
-              <Input 
-                name="email" 
-                type="email" 
-                label="E-mail" 
-                error={errors.email}
-                {...register('email')}
-              />
+                <Input 
+                  name="email" 
+                  type="email" 
+                  label="E-mail" 
+                  error={errors.email}
+                  {...register('email')}
+                  defaultValue={cont.email}
+                />
+              </>
+              ))}
             </SimpleGrid>
           </VStack>
 
@@ -103,7 +127,7 @@ export default function CreateContact() {
                   type="submit"
                   isLoading={formState.isSubmitting}
                 >
-                  Salvar
+                  Alterar
                 </Button>
             </HStack>
           </Flex>

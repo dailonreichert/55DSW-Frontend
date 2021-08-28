@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Heading, Icon, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
 import moment from "moment";
+import Router from "next/router";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RiAddLine, RiDeleteBinLine } from "react-icons/ri";
@@ -25,12 +26,22 @@ export default function ListAppointments() {
     useEffect(() => {
         api.get<Appointments[]>('/compromisso', {
             params: {
-                id_contato : 1,
-                id_usuario : 1
+                id_contato : localStorage.getItem("id_contato"),
+                id_usuario : localStorage.getItem("id_usuario")
             }
         })
         .then(response => setAppointments(response.data));
     }, [appointments]);
+
+    function handleDeleteAppointment(id : string) {
+        if(window.confirm('Deseja excluir o registro selecionado?')){
+            api.delete(`/compromisso/${id}`, { params: {
+                id_usuario : localStorage.getItem("id_usuario"),
+                id_contato : localStorage.getItem("id_contato")
+            }
+            });
+        }
+    }
 
     return (
         <Box>
@@ -78,16 +89,16 @@ export default function ListAppointments() {
                                                         <Text>{moment(appointment.data).format('DD/MM/YYYY')}</Text>
                                                     </Td>}
                                 <Td>
-                                    <Link href="/contacts/update" passHref>
-                                        <Button 
-                                            as="a" 
-                                            size="sm" 
-                                            fontSize="sm" 
-                                            colorScheme="red" 
-                                            leftIcon={<Icon as={RiDeleteBinLine} fontSize="16"/>}>
-                                            {isWideVersion ? 'Excluir' : ''}
-                                        </Button>
-                                    </Link>
+
+                                    <Button 
+                                        as="a" 
+                                        size="sm" 
+                                        fontSize="sm" 
+                                        colorScheme="red" 
+                                        onClick={() => handleDeleteAppointment(appointment.id)}
+                                        leftIcon={<Icon as={RiDeleteBinLine} fontSize="16"/>}>
+                                        {isWideVersion ? 'Excluir' : ''}
+                                    </Button>
                                 </Td>
                             </Tr>
                         ))}

@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Heading, Icon, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
 import Link from "next/link";
+import Router from "next/router";
 import { useEffect, useState } from "react";
 import { RiAddLine, RiBookMarkLine, RiPencilLine } from "react-icons/ri";
 import { Header } from "../components/Header";
@@ -22,8 +23,24 @@ export default function Dashboard() {
     })
 
     useEffect(() => {
-      api.get<Contacts[]>('/contato').then(response => setContacts(response.data));
-    }, [contacts]);
+      api.get<Contacts[]>('/contato',{
+        params: {
+          id_usuario: localStorage.getItem("id_usuario"),
+        }
+    }).then(response => setContacts(response.data));
+    }, []);
+
+    function handleListAppointment(id_contato : string) {
+        localStorage.setItem("id_contato", id_contato);
+
+        Router.push('/appointments');
+    }
+
+    function handleUpdateContact(id_contato: string){
+        localStorage.setItem("id_contato", id_contato);
+
+        Router.push('/contacts/update');
+    }
 
     return (
         <Box>
@@ -70,28 +87,28 @@ export default function Dashboard() {
                                                         <Text>{contact.email}</Text>
                                                     </Td>}
                                 <Td>
-                                    <Link href="/contacts/update" passHref>
-                                        <Button 
-                                            as="a" 
-                                            size="sm" 
-                                            fontSize="sm" 
-                                            colorScheme="whiteAlpha" 
-                                            leftIcon={<Icon as={RiPencilLine} fontSize="16"/>}>
-                                            {isWideVersion ? 'Editar' : ''}
-                                        </Button>
-                                    </Link>
+                                    <Button 
+                                        as="a" 
+                                        size="sm" 
+                                        fontSize="sm" 
+                                        colorScheme="whiteAlpha" 
+                                        onClick={() => handleUpdateContact(contact.id)}
+                                        leftIcon={<Icon as={RiPencilLine} fontSize="16"/>}>
+                                        {isWideVersion ? 'Editar' : ''}
+                                    </Button>
                                 </Td>
                                 <Td>
-                                    <Link href="/appointments" passHref>
-                                        <Button 
-                                            as="a" 
-                                            size="sm" 
-                                            fontSize="sm" 
-                                            colorScheme="facebook" 
-                                            leftIcon={<Icon as={RiBookMarkLine} fontSize="16"/>}>
-                                            {isWideVersion ? 'Compromissos' : ''}
-                                        </Button>
-                                    </Link>
+                                    
+                                <Button 
+                                    as="a" 
+                                    size="sm" 
+                                    fontSize="sm" 
+                                    colorScheme="facebook" 
+                                    onClick={() => handleListAppointment(contact.id)}
+                                    leftIcon={<Icon as={RiBookMarkLine} fontSize="16"/>}>
+                                    {isWideVersion ? 'Compromissos' : ''}
+                                </Button>
+                                    
                                 </Td>
                             </Tr>
                         ))}

@@ -4,6 +4,8 @@ import * as yup from 'yup';
 import { Input } from '../components/Form/Input';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Logo } from '../components/Header/Logo';
+import { useRouter } from 'next/router';
+import api from '../services/api';
 
 type SignInFormData = {
   username: string;
@@ -16,6 +18,8 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function SignIn() {
+  const router = useRouter();
+
   const {register, handleSubmit, formState} = useForm({
     resolver: yupResolver(signInFormSchema)
   });
@@ -23,8 +27,23 @@ export default function SignIn() {
   const {errors} = formState;
 
   const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log(values);
+    const data = {
+      username : values.username,
+      password : values.password
+    }
+
+    try{
+      const response = await api.post('/usuario/login', {
+        username: values.username, 
+        senha: values.password
+      });
+
+      localStorage.setItem("id_usuario", String(response.data.id));
+
+      router.push('/dashboard');
+    } catch (err){
+      alert('Username e/ou senha incorreto(s)!');
+    }
   }
 
   return (
@@ -52,7 +71,7 @@ export default function SignIn() {
             type="username" 
             label="Username" 
             error={errors.username}
-            {...register('email')}
+            {...register('username')}
           /> 
 
           <Input 

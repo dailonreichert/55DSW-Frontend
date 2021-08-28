@@ -7,6 +7,9 @@ import Link from "next/link";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import router from "next/router";
+import api from "../../services/api";
+import Router from "next/router";
 
 type CreateAppointmentFormData = {
   description: string;
@@ -21,15 +24,30 @@ const createUserFormSchema = yup.object().shape({
 });
 
 export default function CreateAppointments() {
+
   const {register, handleSubmit, formState} = useForm({
       resolver: yupResolver(createUserFormSchema)
   });
 
   const {errors} = formState;
 
-  const handleCreateUser: SubmitHandler<CreateAppointmentFormData> = async (values) => {
-      console.log(values);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+  const handleCreateAppointment: SubmitHandler<CreateAppointmentFormData> = async (values) => {
+    try{
+      api.post('/compromisso', {
+        descricao : values.description, 
+        local : values.local,
+        data : values.date,
+        id_usuario : localStorage.getItem("id_usuario"),
+        id_contato : localStorage.getItem("id_contato")
+      });
+    }
+    catch(err){
+      alert('erro ao tentar incluir compromisso!');
+    }
+
+    alert('Compromisso criado com sucesso!');
+
+    router.push('/appointments');
   }
 
   return (
@@ -43,7 +61,7 @@ export default function CreateAppointments() {
             borderRadius={8} 
             bg="gray.800" 
             p={["6", "8"]}
-            onSubmit={handleSubmit(handleCreateUser)}
+            onSubmit={handleSubmit(handleCreateAppointment)}
         >
           <Heading size="lg" fontWeight="normal">Criar Compromisso</Heading>
 
@@ -78,7 +96,7 @@ export default function CreateAppointments() {
 
           <Flex mt="8" justify="flex-end">
             <HStack spacing="4">
-              <Link href="/users" passHref>
+              <Link href="/appointments" passHref>
                 <Button colorScheme="whiteAlpha">Cancelar</Button>
               </Link>    
                 <Button 

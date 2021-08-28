@@ -42,11 +42,17 @@ export default function CreateUser() {
           senha: values.password
         });
 
-        alert('Usuário criado com sucesso');
+        alert('Usuário criado com sucesso!');
         
         router.push('/');
       } catch (err) {
-        alert('Erro ao adicionar usuário');
+        if(err.response.status == 409){
+          alert('Username já está em uso!');
+
+          return;
+        }
+
+        alert('Erro ao cadastrar usuário!');
       }
     }
 
